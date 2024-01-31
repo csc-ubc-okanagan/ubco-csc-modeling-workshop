@@ -47,8 +47,8 @@ ggplot(d0) +
               formula = y ~ x, se = FALSE) +
   geom_point(aes(x, e)) +
   labs(x = 'Predictor (indepedent variable), x',
-       y = expression(Residuals~(e~'='~Y~-~mu)),
-       title = expression(E(Y)~'='~mu~'='~beta[0]~+~beta[1]~x))
+       y = expression(Residuals~(e~'='~Y~-~hat(mu))),
+       title = expression(Var(Y)~'='~sigma^2))
 
 #' 4. *Independence*: Observations are independent of each other.
 ggplot(d0) +
@@ -161,7 +161,7 @@ ggplot() +
   labs(x = 'Predictor (indepedent variable)',
        y = 'Response (dependent variable)',
        title = 'Estimated variance in Y not explained by x, SSE ='~
-         sum(''['i=1']^n~(bar(y[i])~-~hat(mu[i])))^2)
+         sum(''['i=1']^n~(y[i]~-~hat(mu[i])))^2)
 
 # SST = SSR + SSE
 SST <- sum((d0$Y - mean(d0$Y))^2)
@@ -185,6 +185,10 @@ summary(m0)$dev.expl # for LMs, deviance explained = R^2
 appraise(m0, method = 'simulate', n_simulate = 1e4)
 
 ##' **Limitations of simple linear regression**
-m <- gam(weight ~ Time, data = ChickWeight)
+m <- gam(weight ~ Time + I(Time^2), data = ChickWeight)
 
 appraise(m, method = 'simulate', n_simulate = 1e4)
+
+ggplot(ChickWeight, aes(Time, weight)) +
+  geom_point() +
+  geom_smooth(method = 'gam')
