@@ -28,7 +28,7 @@ plot_example_diagnostics <- function(seed = as.numeric(Sys.time())) {
            title = expression(E(Y)~'='~mu~but~E(x)~'='~x)),
     #' 2. *Linearity*: The relationship between X and the mean of Y is linear.
     ggplot(d0) +
-      geom_line(aes(x, mu), col = 'red', lwd = 1) +
+      geom_line(aes(x, mu), col = 'red', lwd = 1, alpha = 0.5) +
       geom_smooth(aes(x, Y), lwd = 1, method = 'gam', formula = y ~ s(x),
                   color = 'darkorange') +
       geom_point(aes(x, Y)) +
@@ -41,7 +41,7 @@ plot_example_diagnostics <- function(seed = as.numeric(Sys.time())) {
                   formula = y ~ s(x), se = FALSE) +
       geom_point(aes(x, e)) +
       labs(x = 'x', y = 'Residuals (e)',
-           title = expression(E(Y)~'='~mu~'='~beta[0]~+~beta[1]~x)),
+           title = expression(Var(epsilon)~'='~sigma^2)),
     #' 4. *Independence*: Observations are independent of each other.
     ggplot(d0) +
       geom_point(aes(seq(nrow(d0)), Y)) +
@@ -59,12 +59,12 @@ plot_example_diagnostics <- function(seed = as.numeric(Sys.time())) {
       labs(x = expression('Residuals,'~e~'='~Y~-~hat(mu)),
            y = 'Density',
            title = expression(epsilon~'~'~N('0,'~sigma^2))),
-  ggplot(d0, aes(sample = e)) +
-    geom_qq_line(color = 'red') +
-    geom_qq(color = 'black') +
-    labs(x = 'Expected quantiles',
-         y = 'Obseved quantiles',
-         title = expression(epsilon~'~'~N('0,'~sigma^2))))
+    ggplot(d0, aes(sample = e)) +
+      geom_qq_line(color = 'red') +
+      geom_qq(color = 'black') +
+      labs(x = 'Expected quantiles',
+           y = 'Obseved quantiles',
+           title = expression(epsilon~'~'~N('0,'~sigma^2))))
 }
 
 plot_example_diagnostics() # run a few times for some examples
@@ -85,15 +85,21 @@ ggplot(ChickWeight, aes(Time, weight)) +
   labs(x = 'Time (days)', y = 'Weight (g)')
 
 # create diagnostic plots
-appraise(m_cw, method = 'simulate', n_simulate = 1e4)
+appraise(model = m_cw, method = 'simulate', n_simulate = 1e4)
 
 ### log-transforming data does not fix things
 min(ChickWeight$weight)
 m_cw_log <- gam(formula = log(weight) ~ Time, # Y ~ x
-            family = gaussian(), # because it's a linear model
-            data = ChickWeight,
-            method = 'ML') # find most likely coefficients given the data
+                family = gaussian(), # because it's a linear model
+                data = ChickWeight,
+                method = 'ML') # find most likely coefficients given the data
 appraise(m_cw_log, method = 'simulate', n_simulate = 1e4)
+
+# plot the data
+ggplot(ChickWeight, aes(Time, log(weight))) +
+  geom_point() +
+  geom_smooth(method = 'gam', formula = y ~ s(x)) +
+  labs(x = 'Time (days)', y = 'Weight (g)')
 
 ### a quick note Jensen's inequality
 Y <- rpois(1e5, lambda = 3)
@@ -129,7 +135,7 @@ m_wh <- gam(formula = weight ~ height,
             method = 'ML')
 appraise(m_wh, method = 'simulate', n_simulate = 1e4)
 
-# income and illiteracy of US states in the 1970 ----
+# income and illiteracy of US states in the 1970s ----
 ?state.x77 # see notes in details
 states <- as.data.frame(state.x77)
 # Income: per capita income (1974)
@@ -155,10 +161,10 @@ ggplot(filter(states, Income < 6000), aes(Income, Illiteracy)) +
   labs(x = 'Per capita income (USD)', y = 'Illiteracy (%)')
 
 m_ii2 <- gam(formula = Illiteracy ~ Income,
-            family = gaussian(),
-            data = states,
-            subset = Income < 6000,
-            method = 'ML')
+             family = gaussian(),
+             data = states,
+             subset = Income < 6000,
+             method = 'ML')
 appraise(m_ii2, method = 'simulate', n_simulate = 1e4, n_bins = 5)
 
 ggplot(filter(states, Income < 6000), aes(Income, Illiteracy)) +
