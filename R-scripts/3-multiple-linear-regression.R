@@ -34,6 +34,7 @@ m_1 <- gam(Life_exp ~ Income,
            family = gaussian(),
            data = states,
            method = 'ML')
+
 # check assumptions and fit
 appraise(m_1) # acceptably good fit
 draw(m_1, parametric = TRUE)
@@ -51,7 +52,8 @@ m_2 <- gam(Life_exp ~ Income + Murder_1e5,
            family = gaussian(),
            data = states,
            method = 'ML')
-appraise(m_2) # acceptably good fit
+
+appraise(m_2) # oddly high density of residuals ~= 0.5
 draw(m_2, parametric = TRUE)
 summary(m_2) # relatively good R^2_adj
 
@@ -74,7 +76,8 @@ m_3 <- gam(Life_exp ~ Income + Murder_1e5 + HS_grad_perc,
            family = gaussian(),
            data = states,
            method = 'ML')
-appraise(m_3, method = 'simulate', n_simulate = 1e4) # acceptably good fit
+
+appraise(m_3, method = 'simulate', n_simulate = 1e4) # somewhat better
 draw(m_3, parametric = TRUE)
 summary(m_3) # R^2_adj does not improve much
 
