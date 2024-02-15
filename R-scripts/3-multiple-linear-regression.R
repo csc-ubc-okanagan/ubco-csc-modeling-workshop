@@ -62,7 +62,7 @@ ggplot(states, aes(Income, Murder_1e5)) +
   geom_point() +
   geom_smooth(method = 'lm', formula = y ~ x)
 
-# add a predictor for murder per 100,000 in 1976 ----
+# add a predictor high school grads in 1976 ----
 dag_3 <- dagitty('Income -> Life_exp
                  Income -> Murder_1e5
                  Murder_1e5 -> Life_exp
