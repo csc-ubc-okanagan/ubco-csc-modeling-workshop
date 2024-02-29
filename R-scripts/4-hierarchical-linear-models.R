@@ -73,6 +73,17 @@ m_cw_3 <- gam(formula = weight2 ~
               family = gaussian(), # because it's a linear model
               data = ChickWeight,
               method = 'ML') # find most likely coefficients given the data
+
+# writing the model using the asterisk format as opposed to the colon format
+m_cw_3 <- gam(formula = weight2 ~
+                Time * food_g +
+                Diet +
+                Time:Diet +
+                s(Chick, bs = 're'),
+              family = gaussian(), # because it's a linear model
+              data = ChickWeight,
+              method = 'ML') # find most likely coefficients given the data
+
 appraise(m_cw_3)
 summary(m_cw_3)
 plot(m_cw_3, pages = 1, all.terms = TRUE) # no Time:food_g plot
@@ -106,7 +117,7 @@ pred_int %>%
   scale_color_distiller('Diet type', type = 'div', palette = 7) +
   theme(legend.position = 'top')
 
-# plot Time:food_g interaction for each diet 
+#' plot `Time * food_g` interaction for each diet 
 ggplot(pred_int, aes(Time, food_g, fill = mu)) +
   facet_wrap(~ Diet) +
   geom_raster() +
