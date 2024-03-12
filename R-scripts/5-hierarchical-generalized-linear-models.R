@@ -1,4 +1,4 @@
-#' *Workshop 5: Interaction terms and hierarchical linear models and  in R*
+#' *Workshop 5: Hierarchical Generalized Linear Models in R*
 #' Copyright 2024 Stefano Mezzini
 #' Published under the MIT licence
 #' https://github.com/csc-ubc-okanagan/ubco-csc-modeling-workshop/tree/main
@@ -38,10 +38,11 @@ m_cw_lm <- gam(formula = weight ~
 appraise(m_cw_lm)
 summary(m_cw_lm)
 
-# adding interaction terms of time and diet (diet affects growth)
+# now fit a non-gaussian GLM instead of a LM
+# choosing Gamma family because weight is > 0 but has no clear upper limit
 # link function because we want to map (-Inf, Inf) to (0, Inf) using exp()
 m_cw_glm <- gam(formula = weight ~
-                  Time + # linear effect of time
+                  Time + #' effect of time is linear *on the link scale*
                   Diet + # each diet has a different value at Time = 0
                   Time:Diet + # time works differently for each diet
                   s(Chick, bs = 're'),
