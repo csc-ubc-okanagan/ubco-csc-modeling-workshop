@@ -1,4 +1,4 @@
-#' *Workshop 4: Interaction terms and hierarchical linear models and  in R*
+#' *Workshop 4: Interaction terms and Hierarchical Linear Models in R*
 #' Copyright 2024 Stefano Mezzini
 #' Published under the MIT licence
 #' https://github.com/csc-ubc-okanagan/ubco-csc-modeling-workshop/tree/main
