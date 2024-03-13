@@ -91,8 +91,8 @@ m_cw_gam <- bam(formula = weight ~
                   Diet ,
                 family = Gamma(link = 'log'),
                 data = ChickWeight,
-                method = 'fREML',
-                discrete = TRUE)
+                method = 'fREML', # fast REML
+                discrete = TRUE) # required for fREML
 
 draw(m_cw_gam) #' see `s(Time,Diet)`
 draw(m_cw_gam, scales = 'fixed') #' see `s(Time,Diet)`
@@ -109,7 +109,7 @@ ggplot(mapping = aes(x = predict(m_cw_gam, type = 'link'),
 
 # dev.expl = 99.9% => almost no error => almost no longer stats, just math
 summary(m_cw_gam)
-draw(m_cw_gam)
+draw(m_cw_gam, parametric = TRUE)
 
 # plot predictions
 range(ChickWeight$Time)
