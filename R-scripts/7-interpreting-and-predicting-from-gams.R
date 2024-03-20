@@ -31,7 +31,7 @@ range(ChickWeight$Time)
 newd <- expand_grid(
   Time = seq(0, 21, length.out = 400),
   Diet = unique(ChickWeight$Diet), # since we are using fixed effects
-  Chick = 'new chick') # since we are using random effects
+  Chick = factor('new chick')) # since we are using random effects
 
 # predictions with 95% credible intervals assuming Gaussian residuals ----
 preds_gaus <- 
@@ -56,9 +56,6 @@ preds_gaus <-
              upr_95 = exp(gam_fit + 1.96 * gam_se)))
 preds_gaus
 
-# residuals are underdispersed, so assumption of Gaussian CIs is invalid
-appraise(m, method = 'simulate')
-
 # plotting the predictions
 p_gaus_cis <-
   ggplot(preds_gaus) +
@@ -70,29 +67,31 @@ p_gaus_cis <-
   scale_y_continuous('Weight (g)', expand = c(0, 0), limits = c(0, NA)) +
   theme(legend.position = 'top'); p_gaus_cis
 
+# residuals are underdispersed, so assumption of Gaussian CIs may be invalid
+appraise(m, method = 'simulate')
+
 # predictions with 95% credible intervals estimated from the posterior ----
 preds_sim <-
-  bind_cols(
-    newd,
+  left_join(
+    mutate(newd, row = 1:n()),
     # Gamma GAM predictions
     #' need to specify `discrete = FALSE` and exclude `s(Time,Chick)` to
     #' include a new random effect since we are using `discrete = TRUE` in
     #' `bam()`
-    simulate(object = m, # our model
-             data = newd, # the new data to predict for
-             nsim = 1e4, # need >= 10,000 for reasonable estimates
-             discrete = FALSE, #' since we have REs and `discrete = TRUE`
-             exclude = c('s(Time,Chick)')) %>% #' not excluding gives `NA`s
+    fitted_samples(model = m, # our model
+                   seed = 1,
+                   data = newd, # the new data to predict for
+                   n = 1e4, # need 10,000 for reasonable estimates
+                   discrete = FALSE, #' since we have REs and `discrete = TRUE`
+                   exclude = c('s(Time,Chick)')) %>% #' not excluding gives `NA`s
       as.data.frame() %>%
-      as_tibble()) %>%
-      pivot_longer(cols = ! c('Time', 'Diet', 'Chick'),
-                   values_to = 'value', names_to = 'simulation') %>%
-      mutate(simulation = substr(simulation, 2, nchar(simulation))) %>%
-      group_by(Diet, Time) %>%
-      summarize(lwr_95 = quantile(value, 0.025), # lower 95% CI
-                mu_hat = quantile(value, 0.5), # median
-                upr_95 = quantile(value, 0.975), # upper 95% CI
-                .groups = 'drop')
+      as_tibble(),
+    by = 'row') %>%
+  group_by(Diet, Time) %>%
+  summarize(lwr_95 = quantile(fitted, 0.025), # lower 95% CI
+            mu_hat = quantile(fitted, 0.5), # median
+            upr_95 = quantile(fitted, 0.975), # upper 95% CI
+            .groups = 'drop')
 preds_sim
 
 # credible intervals are much narrower
@@ -106,4 +105,6 @@ p_sim_cis <-
   scale_y_continuous('Weight (g)', expand = c(0, 0), limits = c(0, NA)) +
   theme(legend.position = 'top'); p_sim_cis
 
-cowplot::plot_grid(p_gaus_cis, p_sim_cis, nrow = 1)
+p_sim_cis +
+  geom_ribbon(aes(Time, ymin = lwr_95, ymax = upr_95), fill = 'transparent',
+              color = 'darkorange', data = preds_gaus)
