@@ -14,13 +14,13 @@ m <- bam(formula = weight ~
            s(Time, k = 5) + # common smooth effect of time
            s(Time, Diet, bs = 'fs', k = 5) + #'deviations from common `s()`
            s(Time, Chick, bs = 'fs', k = 5) + #' chick-level deviations
-           Diet ,
+           Diet,
          family = Gamma(link = 'log'),
          data = ChickWeight,
          method = 'fREML', # fast REML
          discrete = TRUE) # drastically speeds up computation
 
-draw(m, scales = 'fixed', parametric = TRUE) # view terms on the link scale
+draw(m, scales = 'free', parametric = TRUE) # view terms on the link scale
 
 summary(m)
 
@@ -61,7 +61,19 @@ preds
 ggplot(preds) +
   facet_wrap(~ paste('Diet', Diet)) +
   geom_point(aes(Time, weight), ChickWeight, alpha = 0.2) +
-  geom_ribbon(aes(Time, ymin = lwr_95, ymax = upr_95), alpha = 0.2) +
-  geom_line(aes(Time, mu_hat), lwd = 1) +
+  geom_ribbon(aes(Time, ymin = lwr_95, ymax = upr_95, fill = Diet),
+              alpha = 0.2) +
+  geom_line(aes(Time, mu_hat, color = Diet), lwd = 1) +
   xlab('Time (days)') +
-  scale_y_continuous('Weight (g)', expand = c(0, 0), limits = c(0, NA))
+  scale_y_continuous('Weight (g)', limits = c(0, NA)) +
+  khroma::scale_color_bright() +
+  khroma::scale_fill_bright()
+
+ggplot(preds) +
+  geom_ribbon(aes(Time, ymin = lwr_95, ymax = upr_95, fill = Diet),
+              alpha = 0.2) +
+  geom_line(aes(Time, mu_hat, color = Diet), lwd = 1) +
+  xlab('Time (days)') +
+  scale_y_continuous('Weight (g)', limits = c(0, NA)) +
+  khroma::scale_color_bright() +
+  khroma::scale_fill_bright()
