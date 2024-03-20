@@ -34,6 +34,8 @@ newd <- expand_grid(
   Chick = factor('new chick')) # since we are using random effects
 
 # predictions with 95% credible intervals assuming Gaussian residuals ----
+appraise(m, method = 'simulate', n_simulate = 1e3)
+
 preds_gaus <- 
   bind_cols( # bind columns together
     # data used for predictions
@@ -49,62 +51,17 @@ preds_gaus <-
             discrete = FALSE, #' since we have REs and `discrete = TRUE`
             exclude = c('s(Time,Chick)')) %>% #' not excluding gives `NA`s
       as.data.frame() %>%
-      rename(gam_fit = fit, gam_se = se.fit) %>%
-      mutate(mu_hat = exp(gam_fit),
+      mutate(mu_hat = exp(fit),
              # assuming Gaussian CIs on link scale (see residual qqplot)
-             lwr_95 = exp(gam_fit - 1.96 * gam_se),
-             upr_95 = exp(gam_fit + 1.96 * gam_se)))
+             lwr_95 = exp(fit - 1.96 * se.fit),
+             upr_95 = exp(fit + 1.96 * se.fit)))
 preds_gaus
 
 # plotting the predictions
-p_gaus_cis <-
-  ggplot(preds_gaus) +
+ggplot(preds_gaus) +
   facet_wrap(~ paste('Diet', Diet)) +
   geom_point(aes(Time, weight), ChickWeight, alpha = 0.2) +
   geom_ribbon(aes(Time, ymin = lwr_95, ymax = upr_95), alpha = 0.2) +
   geom_line(aes(Time, mu_hat), lwd = 1) +
   xlab('Time (days)') +
-  scale_y_continuous('Weight (g)', expand = c(0, 0), limits = c(0, NA)) +
-  theme(legend.position = 'top'); p_gaus_cis
-
-# residuals are underdispersed, so assumption of Gaussian CIs may be invalid
-appraise(m, method = 'simulate')
-
-# predictions with 95% credible intervals estimated from the posterior ----
-preds_sim <-
-  left_join(
-    mutate(newd, row = 1:n()),
-    # Gamma GAM predictions
-    #' need to specify `discrete = FALSE` and exclude `s(Time,Chick)` to
-    #' include a new random effect since we are using `discrete = TRUE` in
-    #' `bam()`
-    fitted_samples(model = m, # our model
-                   seed = 1,
-                   data = newd, # the new data to predict for
-                   n = 1e4, # need 10,000 for reasonable estimates
-                   discrete = FALSE, #' since we have REs and `discrete = TRUE`
-                   exclude = c('s(Time,Chick)')) %>% #' not excluding gives `NA`s
-      as.data.frame() %>%
-      as_tibble(),
-    by = 'row') %>%
-  group_by(Diet, Time) %>%
-  summarize(lwr_95 = quantile(fitted, 0.025), # lower 95% CI
-            mu_hat = quantile(fitted, 0.5), # median
-            upr_95 = quantile(fitted, 0.975), # upper 95% CI
-            .groups = 'drop')
-preds_sim
-
-# credible intervals are much narrower
-p_sim_cis <-
-  ggplot(preds_sim) +
-  facet_wrap(~ paste('Diet', Diet)) +
-  geom_point(aes(Time, weight), ChickWeight, alpha = 0.2) +
-  geom_ribbon(aes(Time, ymin = lwr_95, ymax = upr_95), alpha = 0.2) +
-  geom_line(aes(Time, mu_hat), lwd = 1) +
-  xlab('Time (days)') +
-  scale_y_continuous('Weight (g)', expand = c(0, 0), limits = c(0, NA)) +
-  theme(legend.position = 'top'); p_sim_cis
-
-p_sim_cis +
-  geom_ribbon(aes(Time, ymin = lwr_95, ymax = upr_95), fill = 'transparent',
-              color = 'darkorange', data = preds_gaus)
+  scale_y_continuous('Weight (g)', expand = c(0, 0), limits = c(0, NA))
