@@ -18,7 +18,7 @@ m <- bam(formula = weight ~
          family = Gamma(link = 'log'),
          data = ChickWeight,
          method = 'fREML', # fast REML
-         discrete = TRUE) # required for fREML
+         discrete = TRUE) # drastically speeds up computation
 
 draw(m, scales = 'fixed', parametric = TRUE) # view terms on the link scale
 
@@ -33,10 +33,10 @@ newd <- expand_grid(
   Diet = unique(ChickWeight$Diet), # since we are using fixed effects
   Chick = factor('new chick')) # since we are using random effects
 
-# predictions with 95% credible intervals assuming Gaussian residuals ----
+# predictions with 95% credible intervals assuming Gaussian posterior ----
 appraise(m, method = 'simulate', n_simulate = 1e3)
 
-preds_gaus <- 
+preds <- 
   bind_cols( # bind columns together
     # data used for predictions
     newd,
@@ -55,10 +55,10 @@ preds_gaus <-
              # assuming Gaussian CIs on link scale (see residual qqplot)
              lwr_95 = exp(fit - 1.96 * se.fit),
              upr_95 = exp(fit + 1.96 * se.fit)))
-preds_gaus
+preds
 
 # plotting the predictions
-ggplot(preds_gaus) +
+ggplot(preds) +
   facet_wrap(~ paste('Diet', Diet)) +
   geom_point(aes(Time, weight), ChickWeight, alpha = 0.2) +
   geom_ribbon(aes(Time, ymin = lwr_95, ymax = upr_95), alpha = 0.2) +
