@@ -42,7 +42,7 @@ m <- gam(formula = y ~ s(x, k = 10),
 draw(m, residuals = TRUE) # note: link and response scale are the same
 
 #' `bs='ts'`; like `bs = 'tp'`, but can be shrunken to a null effect
-#' additional penalty can be severe
+#' additional penalty can be severe, but useful for model selection
 m <- gam(formula = y ~ s(x, bs = 'ts'),
          family = gaussian(link = 'identity'),
          data = d,
