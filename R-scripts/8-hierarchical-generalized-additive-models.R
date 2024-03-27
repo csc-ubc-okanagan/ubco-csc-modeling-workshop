@@ -97,6 +97,7 @@ tibble(x = seq(0, 3, by = 0.01),
 
 # random effects ----
 #' `bs = 're'`; gaussian random effects
+set.seed(0)
 d <- tibble(x = runif(15 * 3), # 15 random U(0, 1) samples for 3 factors
             l = rep(c(-1, 0, 1), 15),
             mu = 3 * sinpi(x) + l, # true response
@@ -150,6 +151,17 @@ weather <-
             year = year(date),
             doy = yday(date)) %>%
   filter(year >= 1975) # data prior to 1975 is odd
+head(weather)
+
+ #' using `s()` only
+m <- bam(avg_temp_c ~ s(doy, bs = 'cc') + s(year, bs = 'tp', k = 20),
+         family = gaussian(link = 'identity'),
+         data = weather,
+         method = 'REML',
+         knots = list(doy = c(0.5, 366.5)))
+# response scale = link scale, so plotting difference from the average
+draw(m, rug = FALSE)
+summary(m)
 
 #' using `te()`; similar to `year * doy`
 m <- bam(avg_temp_c ~
@@ -166,7 +178,7 @@ summary(m) # significance of the term is hard to interpret
 m <- bam(avg_temp_c ~
            s(doy, k = 10, bs = 'cc') +
            s(year, k = 20, bs = 'tp') +
-           ti(doy, year, k = c(10, 10), bs = c('cc', 'cr')),
+           ti(doy, year, k = c(5, 5), bs = c('cc', 'cr')),
          family = gaussian(link = 'identity'),
          data = weather,
          method = 'REML',
@@ -178,7 +190,7 @@ summary(m) # terms are indicated separately
 m <- bam(avg_temp_c ~
            s(doy, k = 10, bs = 'cc') +
            s(year, k = 50, bs = 'tp') +
-           ti(doy, year, k = c(10, 10), bs = c('cc', 'cr')),
+           ti(doy, year, k = c(5, 5), bs = c('cc', 'cr')),
          family = gaussian(link = 'identity'),
          data = weather,
          method = 'REML',
