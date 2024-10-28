@@ -44,21 +44,23 @@ ggplot(d0) +
 ggplot(d0) +
   geom_hline(yintercept = 0, color = 'grey') +
   geom_smooth(aes(x, e), col = 'darkorange', lwd = 1, method = 'lm',
-              formula = y ~ x, se = FALSE) +
+              formula = y ~ x, se = TRUE) +
   geom_point(aes(x, e)) +
   labs(x = 'Predictor (indepedent variable), x',
        y = expression(Residuals~(e~'='~Y~-~hat(mu))),
        title = expression(Var(Y)~'='~sigma^2))
 
 #' 4. *Independence*: Observations are independent of each other.
-ggplot(d0) +
-  geom_point(aes(seq(nrow(d0)), Y)) +
+ggplot(d0, aes(seq(nrow(d0)), Y)) +
+  geom_point() +
+  geom_path(alpha = 0.1) +
   labs(x = 'Observation order',
        y = 'Response (dependent variable), Y',
        title = expression(Y[italic(i)]~'\U2AEB'~Y[italic(j)]~
                             'for'~italic(i)~'\U2260'~italic(j)))
 
 #' 5. *Normality*: For a given value of x, the error in Y is Gaussian.
+#' (This implies Y is also Gaussian)
 ggplot(d0, aes(e)) +
   geom_histogram(color = 'black', fill = 'grey', bins = 8) +
   geom_vline(xintercept = 0, color = 'red') +
@@ -77,15 +79,15 @@ ggplot(d0, aes(Y)) +
        title = 'Variance in Y ignoring x')
 
 # let's account for the effect of x
-# e.g., "How variable is height between people who are 5 years old?"
+# e.g., "How variable is height between people if we account for their age?"
 m0 <- gam(Y ~ x, data = d0)
 
 # look at the coefficient estimates
 # the true relationship is mu = 4 - 3 * x
 summary(m0)
 
-beta0_hat <- coefficients(m0)[1] # true beta0 is 4
-beta1_hat <- coefficients(m0)[2] # true beta1 is -3
+beta0_hat <- coefficients(m0)[1]; beta0_hat # true beta0 is 4
+beta1_hat <- coefficients(m0)[2]; beta1_hat # true beta1 is -3
 
 # Predicting from the model ----
 # predict from the model using coefficients
@@ -104,7 +106,7 @@ ggplot() +
 
 #' predict from the model using `predict()`
 predict(m0, newdata = head(newd0), se.fit = TRUE) # returns a list
-as.data.frame(predict(m0, newdata = head(newd0), se.fit = TRUE)) # as a df
+predict(m0, newdata = head(newd0), se.fit = TRUE) %>% as.data.frame() # as a df
 
 # bind new data and predictions together, then add 95% credible intervals
 pred0 <-
@@ -114,9 +116,7 @@ pred0 <-
   mutate(lwr_95 = mu_hat + se.fit * qnorm(0.025),
          upr_95 = mu_hat + se.fit * qnorm(0.975))
 
-#' add predicted values to `d0`
-d0$mu_hat <- predict(m0)
-
+# plot the estimated relationship
 ggplot() +
   geom_ribbon(aes(x, ymin = lwr_95, ymax = upr_95), pred0,
               fill = 'darkorange', alpha = 0.3) +
@@ -125,8 +125,12 @@ ggplot() +
   labs(x = 'Predictor (indepedent variable)',
        y = 'Response (dependent variable)')
 
+# how well is our model doing? ----
+#' add predicted values to `d0`
+d0$mu_hat <- predict(m0)
+
 #' **measuring the proportion of explained variance**
-#' *overall variance in Y*
+#' *overall variance in Y, Var(Y)*
 ggplot() +
   geom_errorbar(aes(x, ymin = Y, ymax = mean(Y)), d0) +
   geom_point(aes(x, Y), d0) +
@@ -138,6 +142,7 @@ ggplot() +
            sum(''['i=1']^n~(y[i]~-~bar(y))^2)))
 
 #' *estimated variance in Y explained by x*
+#' *Var(Y | X)*
 #' this is what we want to *maximize* when fitting a LM
 ggplot() +
   geom_ribbon(aes(x, ymin = lwr_95, ymax = upr_95), pred0,
@@ -151,6 +156,7 @@ ggplot() +
          ~sum(''['i=1']^n~(hat(mu[i])~-~bar(y))^2))
 
 #' *estimated variance in Y NOT explained by x*
+#' *Var(e) = Var(Y) - Var(Y | X)*
 #' this is what we want to *minimize* when fitting a LM
 ggplot() +
   geom_ribbon(aes(x, ymin = lwr_95, ymax = upr_95), pred0,
@@ -182,12 +188,18 @@ summary(m0)$dev.expl # for LMs, deviance explained = R^2
 #' 3. *Homoscedasticity*: The variance of the residuals is constant.
 #' 4. *Independence*: Observations are independent of each other.
 #' 5. *Normality*: For a given value of X, the error in Y is Gaussian.
-appraise(m0, method = 'simulate', n_simulate = 1e4)
+appraise(m0, method = 'simulate', n_simulate = 1e3)
 
 ##' **Limitations of simple linear regression**
-m <- gam(weight ~ Time + I(Time^2), data = ChickWeight)
+##' When do LMs break?
+m <- gam(weight ~ Time, data = ChickWeight)
 
-appraise(m, method = 'simulate', n_simulate = 1e4)
+#' there are many issues:
+#' - nonlinear relationship between X and Y (see right column)
+#' - heteroskedarsiticy (see right column)
+#' - non-independence within individuals (not shown in this figure)
+#' - residuals are clearly non-gaussian (this causes bad prediction intervals but may still result in reasonable CIs for the mean)
+appraise(m, method = 'simulate', n_simulate = 1e3)
 
 ggplot(ChickWeight, aes(Time, weight)) +
   geom_point() +
