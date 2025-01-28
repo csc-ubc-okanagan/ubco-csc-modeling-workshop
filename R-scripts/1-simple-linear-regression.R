@@ -1,8 +1,8 @@
 #' *Workshop 1: Simple linear regression*
-#' Copyright 2024 Stefano Mezzini
+#' Copyright 2025 Stefano Mezzini
 #' Published under the MIT licence
 #' https://github.com/csc-ubc-okanagan/ubco-csc-modeling-workshop/tree/main
-#' https://events.ok.ubc.ca/event/fitting-models-to-data-not-data-to-models-eight-workshop-series/
+#' https://events.ok.ubc.ca/series/fitting-models-to-data-not-data-to-models-workshop-series/
 library('dplyr')   # for data wrangling
 library('mgcv')    # for modeling
 library('ggplot2') # for fancy plots
@@ -19,8 +19,8 @@ d0 <- tibble(x = runif(n = 100), # predictor of Y
 ggplot(d0) +
   geom_line(aes(x, mu), col = 'red', lwd = 1) +
   geom_point(aes(x, Y)) +
-  labs(x = 'Predictor (indepedent variable)',
-       y = 'Response (dependent variable)',
+  labs(x = 'Predictor (indepedent variable), x',
+       y = 'Response (dependent variable), Y',
        title = expression('Y = 4 - 3x +'~epsilon))
 
 # Assumptions of Linear Models (i.e., ANOVAs) ----
@@ -28,9 +28,9 @@ ggplot(d0) +
 ggplot(d0) +
   geom_errorbar(aes(x, ymin = Y - 1, ymax = Y + 1), color = 'grey') +
   geom_point(aes(x, Y)) +
-  labs(x = 'Predictor (indepedent variable)',
-       y = 'Response (dependent variable)',
-       title = expression(E(Y)~'='~mu~but~E(x)~'='~x))
+  labs(x = 'Predictor (indepedent variable), x',
+       y = 'Response (dependent variable), Y',
+       title = expression('\U1D53C(Y) ='~mu~'but \U1D53C(x) = x'))
 
 #' 2. *Linearity*: The relationship between X and the mean of Y is linear.
 ggplot(d0) +
@@ -38,7 +38,7 @@ ggplot(d0) +
   geom_point(aes(x, Y)) +
   labs(x = 'Predictor (indepedent variable), x',
        y = 'Response (dependent variable), Y',
-       title = expression(E(Y)~'='~mu~'='~beta[0]~+~beta[1]~x))
+       title = expression('\U1D53C(Y) ='~mu~'='~beta[0]~+~beta[1]~x))
 
 #' 3. *Homoscedasticity*: The variance of the residuals is constant.
 ggplot(d0) +
@@ -48,7 +48,7 @@ ggplot(d0) +
   geom_point(aes(x, e)) +
   labs(x = 'Predictor (indepedent variable), x',
        y = expression(Residuals~(e~'='~Y~-~hat(mu))),
-       title = expression(Var(Y)~'='~sigma^2))
+       title = expression('Var(Y) ='~sigma^2))
 
 #' 4. *Independence*: Observations are independent of each other.
 ggplot(d0, aes(seq(nrow(d0)), Y)) +
@@ -180,7 +180,7 @@ SSR + SSE
 # R^2 = SSR / SST
 SSR / SST
 summary(m0)$r.sq # adjusted R^2 (lower than reular R^2)
-summary(m0)$dev.expl # for LMs, deviance explained = R^2
+summary(m0)$dev.expl # for LMs, deviance explained is approximately R^2
 
 # check assumptions of LMs
 #' 1. *Certainty in x*: unlike Y, there is no error or uncertainty in x.
@@ -202,5 +202,6 @@ m <- gam(weight ~ Time, data = ChickWeight)
 appraise(m, method = 'simulate', n_simulate = 1e3)
 
 ggplot(ChickWeight, aes(Time, weight)) +
-  geom_point() +
-  geom_smooth(method = 'gam')
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = 'lm', se = FALSE, col = 'red') +
+  geom_smooth(method = 'gam', se = FALSE)
