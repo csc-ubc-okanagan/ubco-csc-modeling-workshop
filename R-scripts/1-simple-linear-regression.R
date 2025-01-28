@@ -105,7 +105,7 @@ ggplot() +
                                hat(beta)[0]~+~hat(beta)[1]~x~+~e))
 
 #' predict from the model using `predict()`
-predict(m0, newdata = head(newd0), se.fit = TRUE) # returns a list
+predict(object = m0, newdata = head(newd0), se.fit = TRUE) # returns a list
 predict(m0, newdata = head(newd0), se.fit = TRUE) %>% as.data.frame() # as a df
 
 # bind new data and predictions together, then add 95% credible intervals
@@ -170,9 +170,9 @@ ggplot() +
          sum(''['i=1']^n~(y[i]~-~hat(mu[i])))^2)
 
 # SST = SSR + SSE
-SST <- sum((d0$Y - mean(d0$Y))^2)
-SSR <- sum((d0$mu_hat - mean(d0$Y))^2)
-SSE <- sum((d0$mu_hat - d0$Y)^2)
+SST <- sum((d0$Y - mean(d0$Y))^2) # Total sum of squares
+SSR <- sum((d0$mu_hat - mean(d0$Y))^2) # Sum of squares (Regression)
+SSE <- sum((d0$Y - d0$mu_hat)^2) # Sum of squares (Error)
 
 SST
 SSR + SSE
@@ -180,7 +180,7 @@ SSR + SSE
 # R^2 = SSR / SST
 SSR / SST
 summary(m0)$r.sq # adjusted R^2 (lower than reular R^2)
-summary(m0)$dev.expl # for LMs, deviance explained is approximately R^2
+summary(m0)$dev.expl # for LMs, deviance explained is R^2
 
 # check assumptions of LMs
 #' 1. *Certainty in x*: unlike Y, there is no error or uncertainty in x.
@@ -188,11 +188,13 @@ summary(m0)$dev.expl # for LMs, deviance explained is approximately R^2
 #' 3. *Homoscedasticity*: The variance of the residuals is constant.
 #' 4. *Independence*: Observations are independent of each other.
 #' 5. *Normality*: For a given value of X, the error in Y is Gaussian.
-appraise(m0, method = 'simulate', n_simulate = 1e3)
+appraise(model = m0, method = 'simulate', n_simulate = 1e3)
 
 ##' **Limitations of simple linear regression**
 ##' When do LMs break?
 m <- gam(weight ~ Time, data = ChickWeight)
+
+summary(m)
 
 #' there are many issues:
 #' - nonlinear relationship between X and Y (see right column)
