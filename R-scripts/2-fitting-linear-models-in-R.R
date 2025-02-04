@@ -11,9 +11,11 @@ library('faraway') # for datasets
 theme_set(theme_classic(base_size = 15))
 
 # diagnosing any issues with model assumption violations ----
-plot_example_diagnostics <- function(seed = as.numeric(Sys.time())) {
+plot_example_diagnostics <- function(N = 20, seed = as.numeric(Sys.time())) {
+  a <- 0.3 + 0.7 / max(1, sqrt(N - 9))
+  
   set.seed(seed)
-  d0 <- tibble(x = runif(n = 20), # predictor of Y
+  d0 <- tibble(x = runif(n = N), # predictor of Y
                mu = 4 - 3 * x, # true mean of Y
                epsilon = rnorm(n = length(x), mean = 0, sd = 1), # Gaussian error
                Y = mu + epsilon, # values of Y
@@ -23,7 +25,7 @@ plot_example_diagnostics <- function(seed = as.numeric(Sys.time())) {
     #' 1. *Certainty in x*: unlike Y, there is no error or uncertainty in x.
     ggplot(d0) +
       geom_errorbar(aes(x, ymin = Y - 1, ymax = Y + 1), color = 'grey') +
-      geom_point(aes(x, Y)) +
+      geom_point(aes(x, Y), alpha = a) +
       labs(x = 'x',  y = 'Y',
            title = expression(E(Y)~'='~mu~but~E(x)~'='~x)),
     #' 2. *Linearity*: The relationship between X and the mean of Y is linear.
@@ -31,7 +33,7 @@ plot_example_diagnostics <- function(seed = as.numeric(Sys.time())) {
       geom_line(aes(x, mu), col = 'red', lwd = 1, alpha = 0.5) +
       geom_smooth(aes(x, Y), lwd = 1, method = 'gam', formula = y ~ s(x),
                   color = 'darkorange') +
-      geom_point(aes(x, Y)) +
+      geom_point(aes(x, Y), alpha = a) +
       labs(x = 'x',  y = 'Y',
            title = expression(E(Y)~'='~mu~'='~beta[0]~+~beta[1]~x)),
     #' 3. *Homoscedasticity*: The variance of the residuals is constant.
@@ -39,16 +41,17 @@ plot_example_diagnostics <- function(seed = as.numeric(Sys.time())) {
       geom_hline(yintercept = 0, color = 'grey') +
       geom_smooth(aes(x, e), col = 'darkorange', lwd = 1, method = 'gam',
                   formula = y ~ s(x), se = FALSE) +
-      geom_point(aes(x, e)) +
+      geom_point(aes(x, e), alpha = a) +
       labs(x = 'x', y = 'Residuals (e)',
            title = expression(Var(epsilon)~'='~sigma^2)),
-    #' 4. *Independence*: Observations are independent of each other.
+    #' 4. *Independence*: residuals are independent of each other.
     ggplot(d0) +
-      geom_point(aes(seq(nrow(d0)), Y)) +
+      geom_line(aes(seq(nrow(d0)), Y), color = 'grey') +
+      geom_point(aes(seq(nrow(d0)), Y), alpha = a) +
       labs(x = 'Observation order', y = 'Y',
            title = expression(Y[italic(i)]~'\U2AEB'~Y[italic(j)]~
                                 'for'~italic(i)~'\U2260'~italic(j))),
-    #' 5. *Normality*: For a given value of x, the error in Y is Gaussian.
+    #' 5. *Normality*: errors follow a Gaussian distribution.
     ggplot(d0, aes(e)) +
       # geom_density(color = 'black', fill = 'grey', bw = 0.25) +
       geom_histogram(aes(y = after_stat(density)), color = 'black',
@@ -67,7 +70,10 @@ plot_example_diagnostics <- function(seed = as.numeric(Sys.time())) {
            title = expression(epsilon~'~'~N('0,'~sigma^2))))
 }
 
-plot_example_diagnostics() # run a few times for some examples
+# run a few times for some examples
+plot_example_diagnostics(N = 20)
+plot_example_diagnostics(N = 10)
+plot_example_diagnostics(N = 100)
 
 # how to fit linear models in R ----
 ## chick weight data
