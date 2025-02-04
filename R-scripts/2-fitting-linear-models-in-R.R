@@ -46,10 +46,10 @@ plot_example_diagnostics <- function(N = 20, seed = as.numeric(Sys.time())) {
            title = expression(Var(epsilon)~'='~sigma^2)),
     #' 4. *Independence*: residuals are independent of each other.
     ggplot(d0) +
-      geom_line(aes(seq(nrow(d0)), Y), color = 'grey') +
-      geom_point(aes(seq(nrow(d0)), Y), alpha = a) +
-      labs(x = 'Observation order', y = 'Y',
-           title = expression(Y[italic(i)]~'\U2AEB'~Y[italic(j)]~
+      geom_line(aes(seq(nrow(d0)), e), color = 'grey') +
+      geom_point(aes(seq(nrow(d0)), e), alpha = a) +
+      labs(x = 'Observation order', y = 'e',
+           title = expression(e[italic(i)]~'\U2AEB'~e[italic(j)]~
                                 'for'~italic(i)~'\U2260'~italic(j))),
     #' 5. *Normality*: errors follow a Gaussian distribution.
     ggplot(d0, aes(e)) +
@@ -64,7 +64,7 @@ plot_example_diagnostics <- function(N = 20, seed = as.numeric(Sys.time())) {
            title = expression(epsilon~'~'~N('0,'~sigma^2))),
     ggplot(d0, aes(sample = e)) +
       geom_qq_line(color = 'red') +
-      geom_qq(color = 'black') +
+      geom_qq(color = 'black', alpha = a) +
       labs(x = 'Expected quantiles',
            y = 'Obseved quantiles',
            title = expression(epsilon~'~'~N('0,'~sigma^2))))
@@ -105,7 +105,7 @@ appraise(m_cw_log, method = 'simulate', n_simulate = 1e4)
 ggplot(ChickWeight, aes(Time, log(weight))) +
   geom_point() +
   geom_smooth(method = 'gam', formula = y ~ s(x)) +
-  labs(x = 'Time (days)', y = 'Weight (g)')
+  labs(x = 'Time (days)', y = 'log(Weight (g))')
 
 ### a quick note Jensen's inequality
 Y <- rpois(1e5, lambda = 3)
@@ -113,8 +113,8 @@ hist(Y, breaks = seq(0, max(Y)))
 mean(Y) # calculating mean directly
 abline(v = mean(Y), col = 'red', lwd = 2)
 log(Y) %>% mean() %>% exp() # calculating mean after log transformation
-log1p(Y) %>% mean() %>% exp() # calculating mean after log1p transformation
-abline(v = exp(mean(log1p(Y))), col = 'darkorange', lwd = 2)
+log1p(Y) %>% mean() %>% exp() - 1# calculating mean after log1p transformation
+abline(v = exp(mean(log(Y + 1))) - 1, col = 'darkorange', lwd = 2)
 
 #' **fit the correct model to the data, don't fit the data to the model**
 
