@@ -1,5 +1,5 @@
 #' *Workshop 3: Multiple linear regression in R*
-#' Copyright 2024 Stefano Mezzini
+#' Copyright 2025 Stefano Mezzini
 #' Published under the MIT licence
 #' https://github.com/csc-ubc-okanagan/ubco-csc-modeling-workshop/tree/main
 #' https://events.ok.ubc.ca/event/fitting-models-to-data-not-data-to-models-eight-workshop-series/
@@ -36,7 +36,7 @@ m_1 <- gam(Life_exp ~ Income,
            method = 'ML')
 
 # check assumptions and fit
-appraise(m_1) # acceptably good fit
+appraise(m_1, method = 'sim', n_simulate = 1e3) # acceptably good fit
 draw(m_1, parametric = TRUE)
 summary(m_1) # relatively low R^2_adj
 
@@ -53,7 +53,7 @@ m_2 <- gam(Life_exp ~ Income + Murder_1e5,
            data = states,
            method = 'ML')
 
-appraise(m_2) # oddly high density of residuals ~= 0.5
+appraise(m_2, method = 'simulate', n_simulate = 1e3) # oddly high density of residuals ~= 0.5
 draw(m_2, parametric = TRUE)
 summary(m_2) # relatively good R^2_adj
 
