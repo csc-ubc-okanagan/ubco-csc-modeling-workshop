@@ -57,6 +57,7 @@ appraise(m_2) # oddly high density of residuals ~= 0.5
 draw(m_2, parametric = TRUE)
 summary(m_2) # relatively good R^2_adj
 
+# the p-value for Income went up. Why?
 # murder rate and income are correlated, but that's ok (see the DAG)
 ggplot(states, aes(Income, Murder_1e5)) +
   geom_point() +
@@ -79,9 +80,14 @@ m_3 <- gam(Life_exp ~ Income + Murder_1e5 + HS_grad_perc,
 
 appraise(m_3, method = 'simulate', n_simulate = 1e4) # somewhat better
 draw(m_3, parametric = TRUE)
-summary(m_3) # R^2_adj does not improve much
+summary(m_3) # R^2_adj did not improve much
 
 # % grad and income are correlated, so interpret coefs carefully
 ggplot(states, aes(Income, HS_grad_perc)) +
+  geom_point() +
+  geom_smooth(method = 'lm', formula = y ~ x)
+
+# same goes for % grad and murder rate for 1e5 people
+ggplot(states, aes(Murder_1e5, HS_grad_perc)) +
   geom_point() +
   geom_smooth(method = 'lm', formula = y ~ x)
