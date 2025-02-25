@@ -67,11 +67,6 @@ m_cw_2 %>%
   geom_line(aes(time, .fitted), color = 'darkorange', lwd = 1)
 
 # continuous-continuous interaction terms ----
-# count number of chicks per diet
-cw %>%
-  group_by(diet) %>%
-  summarize(n = n_distinct(chick))
-
 # using a hypothetical dataset where amount of food also affects growth
 # assign a random amount of food for each chick
 cw <- cw %>%
