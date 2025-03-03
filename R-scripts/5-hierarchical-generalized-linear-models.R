@@ -41,6 +41,10 @@ summary(m_cw_lm)
 # now fit a non-gaussian GLM instead of a LM
 # choosing Gamma family because weight is > 0 but has no clear upper limit
 # link function because we want to map (-Inf, Inf) to (0, Inf) using exp()
+# this gives a model with estimates that are always positive:
+# mu_hat = exp(b_0 + b_1 * x_1 + ...)
+# additionally, coefficients matter less when the mean is low and more
+# when the mean is high: chicks grow slower early in time and faster later 
 m_cw_glm <- gam(formula = weight ~
                   Time + #' effect of time is linear *on the link scale*
                   Diet + # each diet has a different value at Time = 0
@@ -49,7 +53,7 @@ m_cw_glm <- gam(formula = weight ~
                 family = Gamma(link = 'log'), # no longer a linear model
                 data = ChickWeight,
                 method = 'ML') # find most likely coefficients given the data
-appraise(m_cw_glm)
+appraise(m_cw_glm) # deviations from gaus; some nonlinearity in residuals 
 summary(m_cw_glm)
 
 # check predictions
@@ -83,6 +87,7 @@ preds <-
              glm_95_upr = exp(glm_fit + 1.96 * glm_se)))
 
 # plotting the predictions
+# underestimation for time ~= 12 days; overestimation for time ~- 20 days
 ggplot(preds) +
   facet_wrap(~ paste('Diet', Diet)) +
   geom_point(aes(Time, weight), ChickWeight, alpha = 0.3) +
