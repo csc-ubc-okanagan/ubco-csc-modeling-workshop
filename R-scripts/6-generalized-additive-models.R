@@ -39,7 +39,7 @@ m_cw_lm <- gam(formula = weight ~
                family = gaussian(), # because it's a linear model
                data = ChickWeight,
                method = 'ML')
-appraise(m_cw_lm)
+appraise(m_cw_lm, point_alpha = 0.25)
 
 ggplot(mapping = aes(x = predict(m_cw_lm, type = 'link'),
                      y = residuals(m_cw_lm))) +
@@ -60,7 +60,7 @@ m_cw_glm <- gam(formula = weight ~
                 family = Gamma(link = 'log'), # no longer a linear model
                 data = ChickWeight,
                 method = 'ML')
-appraise(m_cw_glm)
+appraise(m_cw_glm, point_alpha = 0.25)
 
 ggplot(mapping = aes(x = predict(m_cw_glm, type = 'link'),
                      y = residuals(m_cw_glm))) +
@@ -78,6 +78,7 @@ m_cw_gam <- gam(formula = weight ~
                 family = Gamma(link = 'log'),
                 data = ChickWeight,
                 method = 'REML') #' *Restricted ML*, see `?mgcv::gam`
+appraise(m_cw_gam, point_alpha = 0.25)
 
 draw(m_cw_gam) #' see `s(Time,Diet)`
 
@@ -97,7 +98,7 @@ m_cw_gam <- bam(formula = weight ~
 draw(m_cw_gam) #' see `s(Time,Diet)`
 draw(m_cw_gam, scales = 'fixed') #' see `s(Time,Diet)`
 
-appraise(m_cw_gam, n_simulate = 1000, method = 'simulate')
+appraise(m_cw_gam, n_simulate = 1000, method = 'simulate', point_alpha = 0.25)
 
 ggplot(mapping = aes(x = predict(m_cw_gam, type = 'link'),
                      y = residuals(m_cw_gam))) +
@@ -110,6 +111,11 @@ ggplot(mapping = aes(x = predict(m_cw_gam, type = 'link'),
 # dev.expl = 99.9% => almost no error => almost no longer stats, just math
 summary(m_cw_gam)
 draw(m_cw_gam, parametric = TRUE)
+
+# why are estimated intercepts so different?
+coef(m_cw_lm)['(Intercept)'] #' mean weight for diet 1 at `t = 0`
+exp(coef(m_cw_glm)['(Intercept)']) #' mean weight for diet 1 at `t = 0`
+exp(coef(m_cw_gam)['(Intercept)']) #' mean weight for the `t = 21 / 2`
 
 # plot predictions
 range(ChickWeight$Time)
