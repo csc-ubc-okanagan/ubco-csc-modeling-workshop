@@ -38,7 +38,7 @@ m_cw_lm <- gam(formula = weight ~
 appraise(m_cw_lm)
 summary(m_cw_lm)
 
-# now fit a non-gaussian GLM instead of a LM
+# now fit a non-gaussian bGLM instead of a LM
 # choosing Gamma family because weight is > 0 but has no clear upper limit
 # link function because we want to map (-Inf, Inf) to (0, Inf) using exp()
 # this gives a model with estimates that are always positive:
@@ -87,16 +87,17 @@ preds <-
              glm_95_upr = exp(glm_fit + 1.96 * glm_se)))
 
 # plotting the predictions
+# note that the width of the CIs increases with the mean 
 # underestimation for time ~= 12 days; overestimation for time ~- 20 days
 ggplot(preds) +
   facet_wrap(~ paste('Diet', Diet)) +
-  geom_point(aes(Time, weight), ChickWeight, alpha = 0.3) +
+  geom_line(aes(Time, weight, group = Chick), ChickWeight, alpha = 0.3) +
   geom_ribbon(aes(Time, ymin = lm_95_lwr, ymax = lm_95_upr), alpha = 0.3,
               fill = '#4477AA') +
   geom_ribbon(aes(Time, ymin = glm_95_lwr, ymax = glm_95_upr), alpha = 0.3,
               fill = '#EE6677') +
-  geom_line(aes(Time, lm_est), color = '#4477AA', lwd = 2) +
-  geom_line(aes(Time, glm_est), color = '#EE6677', lwd = 2) +
+  geom_line(aes(Time, lm_est), color = '#4477AA', lwd = 1) +
+  geom_line(aes(Time, glm_est), color = '#EE6677', lwd = 1) +
   geom_hline(yintercept = 0, color = 'grey') +
   xlab('Time (days)') +
   scale_y_continuous('Weight (g)', expand = c(0, 0))
