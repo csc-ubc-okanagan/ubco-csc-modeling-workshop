@@ -89,7 +89,7 @@ m_cw_gam <- bam(formula = weight ~
                   s(Time) + # common smooth effect of time
                   s(Time, Diet, bs = 'fs') + #'deviations from common `s()`
                   s(Time, Chick, bs = 'fs') + #' chick-level deviations
-                  Diet ,
+                  Diet,
                 family = Gamma(link = 'log'),
                 data = ChickWeight,
                 method = 'fREML', # fast REML
@@ -171,7 +171,7 @@ preds
 # plotting the predictions
 ggplot(preds) +
   facet_wrap(~ paste('Diet', Diet)) +
-  geom_point(aes(Time, weight), ChickWeight, alpha = 0.2) +
+  geom_line(aes(Time, weight, group = Chick), ChickWeight, alpha = 0.2) +
   geom_ribbon(aes(Time, ymin = lwr95, ymax = upr95, fill = model),
               alpha = 0.2) +
   geom_line(aes(Time, est, color = model), lwd = 1) +
