@@ -92,6 +92,7 @@ p_mean <- ggplot(preds) +
   scale_y_continuous('Weight (g)', limits = c(0, NA)) +
   khroma::scale_color_bright() +
   khroma::scale_fill_bright()
+p_mean
 
 # faceted
 p_mean + facet_wrap(~ paste('Diet', Diet))
