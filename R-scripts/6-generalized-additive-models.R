@@ -83,7 +83,7 @@ appraise(m_cw_gam, point_alpha = 0.25)
 draw(m_cw_gam) #' see `s(Time,Diet)`
 
 # Gamma HGAM with common smooth of time
-#' using `bam()`, `method = 'fREMML'`, and `discrete = TRUE` to reduce
+#' using `bam()`, `method = 'fREML'`, and `discrete = TRUE` to reduce
 #' computation time
 m_cw_gam <- bam(formula = weight ~
                   s(Time) + # common smooth effect of time
@@ -93,7 +93,7 @@ m_cw_gam <- bam(formula = weight ~
                 family = Gamma(link = 'log'),
                 data = ChickWeight,
                 method = 'fREML', # fast REML
-                discrete = TRUE) # required for fREML
+                discrete = TRUE) # requires fREML
 
 draw(m_cw_gam) #' see `s(Time,Diet)`
 draw(m_cw_gam, scales = 'fixed') #' see `s(Time,Diet)`
