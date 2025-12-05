@@ -3,7 +3,7 @@ This repo contains the `R` scripts used in the modeling workshop offered at UBCO
 The `scripts` folder is also accessible by visiting [http://tinyurl.com/csc-modeling-2024](http://tinyurl.com/csc-modeling-2024).
 ## License
 
-[![CC BY-NC 4.0](./docs/assets/images/cc-by-nc-shield.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+[![CC BY-NC 4.0](./assets/images/cc-by-nc-shield.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 This work is licensed under a [Creative Commons Attribution-NonCommercial 4.0 International License][cc-by-nc].
 
